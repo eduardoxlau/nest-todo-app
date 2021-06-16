@@ -4,67 +4,53 @@ import {
   HttpException,
   BadRequestException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { TodoDto } from './dto/todo';
+import { Todo } from './todo.entity';
+import { TodoRepository } from './todo.repository';
 
 @Injectable()
 export class TodoService {
-  todos: TodoDto[] = [
-    {
-      id: 1,
-      description: 'Learn Javascript',
-      done: false,
-    },
-    {
-      id: 2,
-      description: 'Learn NestJS',
-      done: true,
-    },
-    {
-      id: 2,
-      description: 'Build something with NestJS',
-      done: false,
-    },
-  ];
+  constructor(
+    @InjectRepository(TodoRepository)
+    private readonly _todoRepository: TodoRepository,
+  ) {}
 
-  getId(id: number) {
+  async getId(id: number) {
     if (!id) {
       throw new BadRequestException('id must be sent');
     }
-    const todo = this.todos.find(({ id: idUser }) => idUser === id);
+    const todo = await this._todoRepository.findOne(id);
     if (!todo) throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
 
     return todo;
   }
 
-  getAll() {
-    return this.todos;
+  async getAll() {
+    const todos: Todo[] = await this._todoRepository.find();
+    return todos;
   }
 
-  create(todo: TodoDto) {
-    this.todos.push(todo);
-    return todo;
+  async create(todo: TodoDto): Promise<Todo> {
+    return await this._todoRepository.save(todo);
   }
 
-  update(id: number, todo: TodoDto) {
+  async update(id: number, todo: TodoDto): Promise<void> {
     if (!id) {
       throw new BadRequestException('id must be sent');
     }
-    const index = this.getIndexOf(id);
-    this.todos[index] = todo;
-    return this.todos;
+    await this._todoRepository.update(id, todo);
   }
 
-  delete(id: number) {
+  async delete(id: number): Promise<void> {
     if (!id) {
       throw new BadRequestException('id must be sent');
     }
-    const index = this.getIndexOf(id);
-    delete this.todos[index];
-    return this.todos;
-  }
-
-  private getIndexOf(id: number) {
-    return this.todos.findIndex(({ id: idUser }) => idUser === id);
+    try {
+      await this._todoRepository.delete(id);
+    } catch (error) {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
   }
 }
