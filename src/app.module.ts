@@ -3,9 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
-import { UserModule } from './modules/todo/todo.module';
+import { TodoModule } from './modules/todo/todo.module';
 @Module({
-  imports: [TypeOrmModule.forRoot(), UserModule],
+  imports: [TypeOrmModule.forRoot(), TodoModule],
   controllers: [AppController],
   providers: [AppService],
 })

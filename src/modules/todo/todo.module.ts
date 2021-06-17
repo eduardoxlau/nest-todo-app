@@ -10,4 +10,4 @@ import { TodoController } from './todo.controller';
   providers: [TodoService],
   controllers: [TodoController],
 })
-export class UserModule {}
+export class TodoModule {}
